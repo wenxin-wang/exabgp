@@ -31,6 +31,7 @@ from exabgp.configuration.capability import ParseCapability
 from exabgp.configuration.announce import SectionAnnounce
 from exabgp.configuration.announce import AnnounceIPv4
 from exabgp.configuration.announce import AnnounceIPv6
+from exabgp.configuration.announce.ip import AnnounceIPv6EAM
 from exabgp.configuration.announce import AnnounceL2VPN
 from exabgp.configuration.static import ParseStatic
 from exabgp.configuration.static import ParseStaticRoute
@@ -139,6 +140,7 @@ class Configuration (_Configuration):
 		self.announce_ipv4       = AnnounceIPv4          (*params)
 		self.announce_ipv6       = AnnounceIPv6          (*params)
 		self.announce_l2vpn      = AnnounceL2VPN         (*params)
+		self.ipv6_eam            = AnnounceIPv6EAM       (*params)
 		self.flow                = ParseFlow             (*params)
 		self.flow_route          = ParseFlowRoute        (*params)
 		self.flow_match          = ParseFlowMatch        (*params)
@@ -277,6 +279,12 @@ class Configuration (_Configuration):
 			self.static_route.name: {
 				'class':    self.static_route,
 				'commands': self.static_route.known.keys(),
+				'sections': {
+				},
+			},
+			self.ipv6_eam.name: {
+				'class':    self.ipv6_eam,
+				'commands': self.ipv6_eam.known.keys(),
 				'sections': {
 				},
 			},

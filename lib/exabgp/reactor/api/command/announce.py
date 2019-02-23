@@ -114,6 +114,88 @@ def withdraw_route (self, reactor, service, line):
 	return True
 
 
+@Command.register('text','announce ipv6-eam')
+def announce_ipv6_eam (self, reactor, service, line):
+	def callback ():
+		try:
+			descriptions,command = extract_neighbors(line)
+			peers = match_neighbors(reactor.peers,descriptions)
+			if not peers:
+				self.log_failure('no neighbor matching the command : %s' % command)
+				reactor.processes.answer(service,'error')
+				yield True
+				return
+
+			changes = self.api_ipv6_eam(command)
+			if not changes:
+				self.log_failure('command could not parse ipv6-eam in : %s' % command)
+				reactor.processes.answer(service,'error')
+				yield True
+				return
+
+			for change in changes:
+				change.nlri.action = OUT.ANNOUNCE
+				reactor.configuration.inject_change(peers,change)
+				self.log_message('ipv6-eam added to %s : %s' % (', '.join(peers) if peers else 'all peers',change.extensive()))
+				yield False
+
+			reactor.processes.answer_done(service)
+		except ValueError:
+			self.log_failure('issue parsing the ipv6-eam')
+			reactor.processes.answer(service,'error')
+			yield True
+		except IndexError:
+			self.log_failure('issue parsing the ipv6-eam')
+			reactor.processes.answer(service,'error')
+			yield True
+
+	reactor.asynchronous.schedule(service,line,callback())
+	return True
+
+
+@Command.register('text','withdraw ipv6-eam')
+def withdraw_ipv6_eam (self, reactor, service, line):
+	def callback ():
+		try:
+			descriptions,command = extract_neighbors(line)
+			peers = match_neighbors(reactor.peers,descriptions)
+			if not peers:
+				self.log_failure('no neighbor matching the command : %s' % command)
+				reactor.processes.answer(service,'error')
+				yield True
+				return
+
+			changes = self.api_ipv6_eam(command)
+
+			if not changes:
+				self.log_failure('command could not parse ipv6-eam in : %s' % command)
+				reactor.processes.answer(service,'error')
+				yield True
+				return
+
+			for change in changes:
+				change.nlri.action = OUT.WITHDRAW
+				if reactor.configuration.inject_change(peers,change):
+					self.log_message('ipv6-eam removed from %s : %s' % (', '.join(peers) if peers else 'all peers',change.extensive()))
+					yield False
+				else:
+					self.log_failure('ipv6-eam not found on %s : %s' % (', '.join(peers) if peers else 'all peers',change.extensive()))
+					yield False
+
+			reactor.processes.answer_done(service)
+		except ValueError:
+			self.log_failure('issue parsing the ipv6-eam')
+			reactor.processes.answer(service,'error')
+			yield True
+		except IndexError:
+			self.log_failure('issue parsing the ipv6-eam')
+			reactor.processes.answer(service,'error')
+			yield True
+
+	reactor.asynchronous.schedule(service,line,callback())
+	return True
+
+
 @Command.register('text','announce vpls')
 def announce_vpls (self, reactor, service, line):
 	def callback ():

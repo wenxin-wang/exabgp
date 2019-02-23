@@ -62,6 +62,20 @@ class API (Command):
 		changes = self.configuration.scope.pop_routes()
 		return changes
 
+	def api_ipv6_eam (self, command):
+		action, line = command.split(' ',1)
+
+		self.configuration.static.clear()
+		if not self.configuration.partial('ipv6-eam',line):
+			return []
+
+		if self.configuration.scope.location():
+			return []
+
+		self.configuration.scope.to_context()
+		changes = self.configuration.scope.pop('ipv6-eam')
+		return changes
+
 	def api_flow (self, command):
 		action, flow, line = command.split(' ',2)
 

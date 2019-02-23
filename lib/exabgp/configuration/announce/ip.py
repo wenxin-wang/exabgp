@@ -226,27 +226,6 @@ def multicast_v6 (tokeniser):
 	return ip_multicast(tokeniser,AFI.ipv6,SAFI.multicast)
 
 
-class AnnounceIPv6EAM (AnnounceIP):
-	# put next-hop first as it is a requirement atm
-	definition = [] + AnnounceIP.definition
-
-	syntax = \
-		'<safi> <ipv4>/<netmask> <ipv6>/<netmask> { ' \
-		'\n   ' + ' ;\n   '.join(definition) + '\n}'
-
-	known = {}.update(AnnounceIP.known)
-
-	action = {}.update(AnnounceIP.action)
-
-	assign = {}
-
-	name = 'ipv6-eam'
-	afi = None
-
-	def __init__ (self, tokeniser, scope, error, logger):
-		AnnounceIP.__init__(self,tokeniser,scope,error,logger)
-
-
 @ParseAnnounce.register('eam','extend-name','ipv6')
 def ipv6_eam (tokeniser):
 	ip4mask = prefix(tokeniser)
@@ -280,3 +259,25 @@ def ipv6_eam (tokeniser):
 			raise ValueError('eam: unknown command "%s"' % command)
 
 	return [change]
+
+
+class AnnounceIPv6EAM (AnnounceIP):
+	# put next-hop first as it is a requirement atm
+	definition = [] + AnnounceIP.definition
+
+	syntax = \
+		'<safi> <ipv4>/<netmask> <ipv6>/<netmask> { ' \
+		'\n   ' + ' ;\n   '.join(definition) + '\n}'
+
+	known = dict({'ipv6-eam': ipv6_eam}, **AnnounceIP.known)
+
+	action = dict({'ipv6-eam': 'extend-name'}, **AnnounceIP.action)
+
+	assign = {}
+
+	name = 'ipv6-eam'
+	afi = None
+
+	def __init__ (self, tokeniser, scope, error, logger):
+		AnnounceIP.__init__(self,tokeniser,scope,error,logger)
+

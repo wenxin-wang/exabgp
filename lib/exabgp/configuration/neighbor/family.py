@@ -28,6 +28,7 @@ class ParseFamily (Section):
 		'   ipv6 unicast;\n' \
 		'   ipv6 flow;\n' \
 		'   ipv6 flow-vpn;\n' \
+		'   ipv6 eam;\n' \
 		'   l2vpn vpls;\n' \
 		'   l2vpn evpn;\n' \
 		'}'
@@ -47,6 +48,7 @@ class ParseFamily (Section):
 			'mpls-vpn':  	(AFI.ipv6,SAFI.mpls_vpn),
 			'flow':      	(AFI.ipv6,SAFI.flow_ip),
 			'flow-vpn':  	(AFI.ipv6,SAFI.flow_vpn),
+			'eam':  	(AFI.ipv6,SAFI.eam),
 		},
 		'l2vpn': {
 			'vpls':      	(AFI.l2vpn,SAFI.vpls),
