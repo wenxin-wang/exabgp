@@ -1,0 +1,3 @@
+[*.py]
+indent_style = tab # Makefiles must be indented with tabs.
+indent_size = 8
