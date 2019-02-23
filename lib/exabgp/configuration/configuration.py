@@ -257,7 +257,7 @@ class Configuration (_Configuration):
 			},
 			self.announce_ipv6.name: {
 				'class':    self.announce_ipv6,
-				'commands': ['unicast', 'multicast', 'nlri-mpls', 'mpls-vpn', 'flow', 'flow-vpn'],
+				'commands': ['unicast', 'multicast', 'nlri-mpls', 'mpls-vpn', 'flow', 'flow-vpn', 'eam'],
 				'sections': {
 				},
 			},

@@ -97,7 +97,7 @@ class AFI (Resource):
 		if afi == 'ipv4':
 			return ['unicast','multicast','nlri-mpls','mpls-vpn','flow','flow-vpn']
 		if afi == 'ipv6':
-			return ['unicast','mpls-vpn','flow','flow-vpn']
+			return ['unicast','mpls-vpn','flow','flow-vpn','eam']
 		if afi == 'l2vpn':
 			return ['vpls','evpn']
 		if afi == 'bgp-ls':
@@ -143,6 +143,7 @@ class _SAFI (int):
 	# vpn_ad = 140              # [draft-ietf-l3vpn-bgpvpn-auto]
 	# private = [_ for _ in range(241,254)]   # [RFC4760]
 	# unassigned = [_ for _ in range(8,64)] + [_ for _ in range(70,128)]
+	EAM        = 241
 	# reverved = [0,3] + [130,131] + [_ for _ in range(135,140)] + [_ for _ in range(141,241)] + [255,]    # [RFC4760]
 
 	_names = {
@@ -157,6 +158,7 @@ class _SAFI (int):
 		RTC:       'rtc',
 		FLOW_IP:   'flow',
 		FLOW_VPN:  'flow-vpn',
+		EAM:       'eam',
 	}
 
 	def pack (self):
@@ -196,6 +198,7 @@ class SAFI (Resource):
 	rtc        = _SAFI(_SAFI.RTC)
 	flow_ip    = _SAFI(_SAFI.FLOW_IP)
 	flow_vpn   = _SAFI(_SAFI.FLOW_VPN)
+	eam        = _SAFI(_SAFI.EAM)
 
 	common = {
 		undefined.pack():  undefined,
@@ -210,6 +213,7 @@ class SAFI (Resource):
 		rtc.pack():        rtc,
 		flow_ip.pack():    flow_ip,
 		flow_vpn.pack():   flow_vpn,
+		eam.pack():        eam,
 	}
 
 	codes = dict ((k.lower().replace('_','-'),v) for (k,v) in {
@@ -224,6 +228,7 @@ class SAFI (Resource):
 		'rtc':       rtc,
 		'flow':      flow_ip,
 		'flow-vpn':  flow_vpn,
+		'eam':       eam,
 	}.items())
 
 	names = _SAFI._names
@@ -265,6 +270,7 @@ class Family (object):
 		(AFI.ipv6,SAFI.mpls_vpn):  ((24,40),   8),
 		(AFI.ipv6,SAFI.flow_ip):   ((0,16,32), 0),
 		(AFI.ipv6,SAFI.flow_vpn):  ((0,16,32), 0),
+		(AFI.ipv6,SAFI.eam):       ((0,16,32),   0),
 		(AFI.l2vpn,SAFI.vpls):     ((4,),      0),
 		(AFI.l2vpn,SAFI.evpn):     ((4,),      0),
 		(AFI.bgpls,SAFI.bgp_ls):   ((4,),      0),

@@ -17,7 +17,9 @@ from exabgp.protocol.family import AFI
 from exabgp.protocol.family import SAFI
 
 from exabgp.bgp.message.update.nlri.inet import INET
+from exabgp.bgp.message.update.nlri.inet6_eam import INET6EAM
 from exabgp.bgp.message.update.nlri.cidr import CIDR
+from exabgp.bgp.message.update.nlri.eam import EAM
 from exabgp.bgp.message.update.attribute import Attributes
 
 from exabgp.configuration.announce import ParseAnnounce
@@ -222,3 +224,59 @@ def multicast_v4 (tokeniser):
 @ParseAnnounce.register('multicast','extend-name','ipv6')
 def multicast_v6 (tokeniser):
 	return ip_multicast(tokeniser,AFI.ipv6,SAFI.multicast)
+
+
+class AnnounceIPv6EAM (AnnounceIP):
+	# put next-hop first as it is a requirement atm
+	definition = [] + AnnounceIP.definition
+
+	syntax = \
+		'<safi> <ipv4>/<netmask> <ipv6>/<netmask> { ' \
+		'\n   ' + ' ;\n   '.join(definition) + '\n}'
+
+	known = {}.update(AnnounceIP.known)
+
+	action = {}.update(AnnounceIP.action)
+
+	assign = {}
+
+	name = 'ipv6-eam'
+	afi = None
+
+	def __init__ (self, tokeniser, scope, error, logger):
+		AnnounceIP.__init__(self,tokeniser,scope,error,logger)
+
+
+@ParseAnnounce.register('eam','extend-name','ipv6')
+def ipv6_eam (tokeniser):
+	ip4mask = prefix(tokeniser)
+	ip6mask = prefix(tokeniser)
+
+	nlri = INET6EAM(AFI.ipv6,SAFI.eam,OUT.ANNOUNCE)
+	nlri.eam = EAM(CIDR(ip4mask.pack(),ip4mask.mask), CIDR(ip6mask.pack(),ip6mask.mask))
+
+	change = Change(
+		nlri,
+		Attributes()
+	)
+
+	while True:
+		command = tokeniser()
+
+		if not command:
+			break
+
+		action = AnnounceIP.action.get(command,'')
+
+		if action == 'attribute-add':
+			change.attributes.add(AnnounceIP.known[command](tokeniser))
+		elif action == 'nlri-set':
+			change.nlri.assign(AnnounceIP.assign[command],AnnounceIP.known[command](tokeniser))
+		elif action == 'nexthop-and-attribute':
+			nexthop,attribute = AnnounceIP.known[command](tokeniser)
+			change.nlri.nexthop = nexthop
+			change.attributes.add(attribute)
+		else:
+			raise ValueError('eam: unknown command "%s"' % command)
+
+	return [change]
